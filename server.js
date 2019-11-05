@@ -1,17 +1,31 @@
 const express = require('express');
 const dotenv = require('dotenv');
-
-// Route files
-
-const bootcamps = require('./routes/bootcamps');
+const morgan = require('morgan');
+const colors = require('colors');
+const connectDB = require('./config/db');
 
 // To use environment variables we need to load the config.env file from the config folder
 dotenv.config({
     path: './config/config.env'
 });
 
+
+//connect to database
+connectDB();
+
+
+// Route files
+
+const bootcamps = require('./routes/bootcamps');
+
 // initialise app variable with express
 const app = express();
+
+//Dev logging middleware that we only want to run in the dev env
+
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
 
 //Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
@@ -20,4 +34,13 @@ app.use('/api/v1/bootcamps', bootcamps);
 // Create variable for port which you access using process.env
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`));
+const server = app.listen(PORT, console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold));
+
+//handle unhandled promise rejections
+
+process.on('unhandledRejection', (err, promise) => {
+    console.log(`Error: ${err.message}`.red);
+
+    //close server & exit process
+    server.close(() => process.exit(1));
+});
