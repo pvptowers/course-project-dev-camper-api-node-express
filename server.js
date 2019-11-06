@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const colors = require('colors');
 const connectDB = require('./config/db');
-
+const errorHandler = require('./middleware/error');
 // To use environment variables we need to load the config.env file from the config folder
 dotenv.config({
     path: './config/config.env'
@@ -33,6 +33,7 @@ if (process.env.NODE_ENV === 'development') {
 //Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
 
+app.use(errorHandler);
 
 // Create variable for port which you access using process.env
 const PORT = process.env.PORT || 5000;
